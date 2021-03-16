@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,42 +20,36 @@ import com.imudr.model.RawIMU;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
 
+import static android.widget.Toast.LENGTH_LONG;
+
 public class MainActivity extends AppCompatActivity {
-    static final UUID mUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    List<RawIMU> rawIMUS = new ArrayList<>();
+    private static final UUID mUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static final String BT_DEVICE_NAME = "HC-05";
+    ArrayList<RawIMU> rawIMUS = new ArrayList<>();
+    private Button presentDataButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        presentDataButton = findViewById(R.id.presentDataButton);
+        presentDataButton.setEnabled(false);
+    }
 
+    public void readIMU(View view) {
+        presentDataButton.setEnabled(false);
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothDevice hc05 = adapter.getBondedDevices()
-                .stream()
-                .filter(bluetoothDevice -> "HC-05".equals(bluetoothDevice.getName()))
-                .findFirst()
-                .get();
-
-        BluetoothSocket btSocket = null;
-        try {
-            hc05.getUuids();
-            hc05.getBluetoothClass();
-            btSocket = hc05.createInsecureRfcommSocketToServiceRecord(mUUID);
-        } catch (IOException e) {
-            e.printStackTrace();
+        BluetoothDevice hc05 = getNamedBtDevice(adapter, BT_DEVICE_NAME);
+        if (hc05 == null) {
+            Toast.makeText(this, "Device with name " + BT_DEVICE_NAME + " not found", LENGTH_LONG).show();
+            return;
         }
 
-        do {
-            try {
-                btSocket.connect();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } while (!btSocket.isConnected());
+        BluetoothSocket btSocket = createConnectedBtSocket(hc05);
 
         InputStream inputStream = null;
         try {
@@ -67,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         int limit = 50;
         int start = 0;
 
-        while (sc.hasNextLine() && start < limit) {
+        while (sc.hasNextLine() && start <= limit) {
             String rawRead = sc.nextLine();
             Log.i("logging", rawRead + "");
             saveRead(rawRead);
@@ -76,16 +72,54 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
             btSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        presentDataButton.setEnabled(true);
+    }
 
+    private BluetoothSocket createConnectedBtSocket(BluetoothDevice hc05) {
+        int limit = 5;
+        int connectionCounter = 0;
+
+        BluetoothSocket btSocket = null;
+        do {
+            try {
+                btSocket = hc05.createInsecureRfcommSocketToServiceRecord(mUUID);
+                btSocket.connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            connectionCounter++;
+        } while (!btSocket.isConnected() && limit > connectionCounter);
+
+        if (!btSocket.isConnected()) {
+            try {
+                btSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return btSocket.isConnected() ? btSocket : null;
+    }
+
+    private BluetoothDevice getNamedBtDevice(BluetoothAdapter adapter, String btDeviceName) {
+        Optional<BluetoothDevice> btDevice = adapter.getBondedDevices()
+                .stream()
+                .filter(bluetoothDevice -> btDeviceName.equals(bluetoothDevice.getName()))
+                .findFirst();
+
+        return btDevice.orElse(null);
+    }
+
+    public void presentData(View view) {
+        Intent intent = new Intent(this, ChartActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("rawIMUS", rawIMUS);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     private void saveRead(String rawRead) {
@@ -102,11 +136,6 @@ public class MainActivity extends AppCompatActivity {
             );
             rawIMUS.add(rawIMU);
         }
-    }
-
-    public void openBluetoothSelector(View view) {
-        Intent intent = new Intent(this, BluetoothSelectActivity.class);
-        startActivity(intent);
     }
 
     Handler handler = new Handler(new Handler.Callback() {
