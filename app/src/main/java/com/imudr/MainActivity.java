@@ -130,6 +130,14 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void presentGyro250dps(View view) {
+        Intent intent = new Intent(this, ChartGyro250dpsActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("rawIMUS", rawIMUS);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
     private void saveRead(String rawRead) {
         if (rawRead.contains("a/g:")) {
             String[] tmp = rawRead.split(":");
