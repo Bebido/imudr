@@ -115,7 +115,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void presentData(View view) {
-        Intent intent = new Intent(this, ChartActivity.class);
+        Intent intent = new Intent(this, ChartRawActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("rawIMUS", rawIMUS);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
+    public void presentAcc2g(View view) {
+        Intent intent = new Intent(this, ChartAcc2gActivity.class);
         Bundle bundle = new Bundle();
         bundle.putParcelableArrayList("rawIMUS", rawIMUS);
         intent.putExtras(bundle);

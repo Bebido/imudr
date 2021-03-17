@@ -18,7 +18,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.376" />
+        app:layout_constraintVertical_bias="0.361" />
 
     <Button
         android:id="@+id/presentDataButton"
@@ -26,12 +26,23 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#FF9800"
         android:onClick="presentData"
-        android:text="Present data"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Present raw data"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/startReadButton"
-        app:layout_constraintVertical_bias="0.079" />
+        app:layout_constraintTop_toBottomOf="@+id/startReadButton" />
+
+    <Button
+        android:id="@+id/presentAcc2gButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FF9800"
+        android:onClick="presentAcc2g"
+        android:text="Present accelerometer data"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/presentDataButton"
+        app:layout_constraintVertical_bias="0.029" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
