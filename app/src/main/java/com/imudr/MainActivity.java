@@ -10,16 +10,21 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.imudr.calculation.MovementCalc;
+import com.imudr.model.Acc2gIMU;
 import com.imudr.model.RawIMU;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.UUID;
@@ -31,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String BT_DEVICE_NAME = "HC-05";
     ArrayList<RawIMU> rawIMUS = new ArrayList<>();
     private Button presentDataButton;
+    private TextView xDistanceTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         presentDataButton = findViewById(R.id.presentDataButton);
         presentDataButton.setEnabled(false);
+        xDistanceTextView = findViewById(R.id.xDistanceText);
     }
 
     public void readIMU(View view) {
@@ -60,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Scanner sc = new Scanner(inputStream);
-        int limit = 50;
+        int limit = 200;
         int start = 0;
 
         while (sc.hasNextLine() && start <= limit) {
@@ -77,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         presentDataButton.setEnabled(true);
+
+        List<Acc2gIMU> acc2gIMUS = new ArrayList<>();
+        for (RawIMU rawIMU : rawIMUS)
+            acc2gIMUS.add(new Acc2gIMU(rawIMU));
+
+        xDistanceTextView.setText(MessageFormat.format("X: {0}", MovementCalc.calcMovement(acc2gIMUS)));
     }
 
     private BluetoothSocket createConnectedBtSocket(BluetoothDevice hc05) {
@@ -139,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveRead(String rawRead) {
-        if (rawRead.contains("a/g:")) {
+        if (rawRead.contains("t/a/g:")) {
             String[] tmp = rawRead.split(":");
             String[] data = tmp[1].split(",");
             RawIMU rawIMU = new RawIMU(
@@ -148,7 +161,8 @@ public class MainActivity extends AppCompatActivity {
                     Integer.parseInt(data[2]),
                     Integer.parseInt(data[3]),
                     Integer.parseInt(data[4]),
-                    Integer.parseInt(data[5])
+                    Integer.parseInt(data[5]),
+                    Integer.parseInt(data[6])
             );
             rawIMUS.add(rawIMU);
         }

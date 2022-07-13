@@ -5,14 +5,24 @@ public class Acc2gIMU {
     //by (32768/2) = 16384 to get values in g
     private static final Long DIVIDE_VALUE = 16_384L;
 
+    private long elapsedTime;
     private float accX;
     private float accY;
     private float accZ;
 
     public Acc2gIMU(RawIMU rawIMU) {
+        this.elapsedTime = rawIMU.getElapsedTime();
         this.accX = Float.parseFloat(String.valueOf(rawIMU.getAccX())) / DIVIDE_VALUE;
         this.accY = Float.parseFloat(String.valueOf(rawIMU.getAccY())) / DIVIDE_VALUE;
         this.accZ = Float.parseFloat(String.valueOf(rawIMU.getAccZ())) / DIVIDE_VALUE;
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
     }
 
     public float getAccX() {

@@ -5,14 +5,24 @@ public class Gyro250dpsIMU {
     //by (32768/250) = 16384 to get values in g
     private static final float DIVIDE_VALUE = 131.072f;
 
+    private long elapsedTime;
     private float gyroX;
     private float gyroY;
     private float gyroZ;
 
     public Gyro250dpsIMU(RawIMU rawIMU) {
+        this.elapsedTime = rawIMU.getElapsedTime();
         this.gyroX = Float.parseFloat(String.valueOf(rawIMU.getGyroX())) / DIVIDE_VALUE;
         this.gyroY = Float.parseFloat(String.valueOf(rawIMU.getGyroY())) / DIVIDE_VALUE;
         this.gyroZ = Float.parseFloat(String.valueOf(rawIMU.getGyroZ())) / DIVIDE_VALUE;
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
     }
 
     public float getGyroX() {

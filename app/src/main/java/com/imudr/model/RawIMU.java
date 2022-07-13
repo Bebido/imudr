@@ -7,7 +7,8 @@ public class RawIMU implements Parcelable {
     public RawIMU() {
     }
 
-    public RawIMU(int accX, int accY, int accZ, int gyroX, int gyroY, int gyroZ) {
+    public RawIMU(long time, int accX, int accY, int accZ, int gyroX, int gyroY, int gyroZ) {
+        this.elapsedTime = time;
         this.accX = accX;
         this.accY = accY;
         this.accZ = accZ;
@@ -16,6 +17,7 @@ public class RawIMU implements Parcelable {
         this.gyroZ = gyroZ;
     }
 
+    private long elapsedTime;
     private int accX;
     private int accY;
     private int accZ;
@@ -24,6 +26,7 @@ public class RawIMU implements Parcelable {
     private int gyroZ;
 
     protected RawIMU(Parcel in) {
+        elapsedTime = in.readLong();
         accX = in.readInt();
         accY = in.readInt();
         accZ = in.readInt();
@@ -43,6 +46,14 @@ public class RawIMU implements Parcelable {
             return new RawIMU[size];
         }
     };
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
+    }
 
     public int getAccX() {
         return accX;
@@ -99,6 +110,7 @@ public class RawIMU implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(elapsedTime);
         dest.writeInt(accX);
         dest.writeInt(accY);
         dest.writeInt(accZ);
